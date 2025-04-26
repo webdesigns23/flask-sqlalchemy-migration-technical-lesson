@@ -1,24 +1,4 @@
-# Database Migration : Code-Along
-
-## Learning Goals
-
-- Use Flask-Migrate to manage changes to a database schema.
-- Create migrations for different types of schema modifications.
-- **Upgrade** a schema from an old version to a newer version.
-- Roll back, or **downgrade** a schema from a newer version to an older one.
-
----
-
-## Key Vocab
-
-- **Schema**: the blueprint of a database. Describes how data relates to other
-  data in tables, columns, and relationships between them.
-- **Schema Migration**: the process of moving a schema from one version to
-  another.
-
----
-
-## Introduction
+# Technical Lesson: Database Migration
 
 In the previous lesson, we used Flask-Migrate (which uses Alembic behind the
 scenes) to create an initial version of a database schema that defined a single
@@ -28,33 +8,52 @@ existing tables, rename columns, add or change column constraints, etc.
 Flask-Migrate is a powerful tool that can generate migrations for many of the
 common changes we might make to a database schema, including:
 
-- Creating and dropping tables.
-- Creating and dropping columns.
-- Most indexing tasks.
-- Renaming keys.
+* Creating and dropping tables.
+* Creating and dropping columns.
+* Most indexing tasks.
+* Renaming keys.
 
 That being said, there are certain tasks that Flask-Migrate can help us with but
 cannot carry out on its own:
 
-- Table name changes.
-- Column name changes.
-- Adding, removing, or changing unnamed constraints.
-- Converting Python data types that are not supported by the database.
+* Table name changes.
+* Column name changes.
+* Adding, removing, or changing unnamed constraints.
+* Converting Python data types that are not supported by the database.
 
-In this lesson, we will explore various types of schema migrations and how to
-roll back, or downgrade, migrations that were unnecessary or went awry.
+## Scenario
+
+You’ve been hired as a junior backend developer at BrightPath Solutions, a growing consulting firm that manages employee and department data for multiple clients. The initial database for their internal system is in place, but client needs are evolving — they frequently request updates like adding new departments, renaming fields, and adjusting data structures.
+
+Your team wants to avoid manual SQL edits or risky full rebuilds of the database.
+Instead, they want a safe and professional migration system to evolve the schema while protecting existing production data.
+
+In this lesson, you’ll learn how to:
+* Add new tables and columns.
+* Correct mistakes in schema design (like renaming a table or column).
+* Roll back changes safely when a migration introduces an error.
 
 To check out the full list of supported commands, make sure you follow the setup
 instructions and then type `flask db --help` in the terminal.
 
----
+## Tools & Resources
 
-## Setup
+- [GitHub Repo](https://github.com/learn-co-curriculum/flask-sqlalchemy-migration-technical-lesson)
+- [SQLAlchemy ORM Documentation](https://docs.sqlalchemy.org/en/14/orm/)
+- [SQLAlchemy ORM Column Elements and Expressions](https://docs.sqlalchemy.org/en/14/core/sqlelement.html)
+- [Tutorial - Alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html)
+- [Operation Reference - Alembic](https://alembic.sqlalchemy.org/en/latest/ops.html)
+
+## Instructions
+
+### Set Up
 
 This lesson is a code-along, so fork and clone the repo.
 
-Run `pipenv install` to install the dependencies and `pipenv shell` to enter
-your virtual environment before running your code.
+`Pipfile` has some new dependencies that we'll use in this
+lesson:`flask-sqlalchemy`and`flask-migrate`. Run `pipenv install`to install the
+dependencies and `pipenv shell` to enter your virtual environment before running
+your code.
 
 ```console
 $ pipenv install
@@ -70,7 +69,43 @@ $ export FLASK_APP=app.py
 $ export FLASK_RUN_PORT=5555
 ```
 
-## Initial Migration - Employee Model
+### Task 1: Define the Problem
+
+In the real world, database schemas are rarely static. New business needs often require you to:
+
+* Add new fields
+* Modify existing tables
+* Correct naming mistakes
+* Revert accidental changes
+
+Manual SQL modifications can be error-prone and dangerous, especially on production data. Flask-Migrate (powered by Alembic) offers a structured way to version control schema changes safely and roll them back when necessary.
+
+Your Challenge is to use Flask-Migrate to:
+* Manage multiple schema changes across a real project.
+* Correct mistakes without losing existing records.
+* Maintain a clean, consistent database schema throughout multiple migrations.
+
+Learning to create and manage database migrations responsibly is a critical skill for developers maintaining long-running applications.
+
+### Task 2: Determine the Design
+
+The technical design for this project will follow these principles:
+
+* Model Changes First: Modify the Python models first (source of truth).
+* Autogenerate Migrations: Use flask db migrate to create new migration scripts reflecting model updates.
+* Manual Script Editing: Recognize when autogenerated migrations are insufficient (e.g., renaming tables/columns) and manually adjust scripts using Alembic operations (rename_table, alter_column).
+* Upgrade and Downgrade: Always verify the migration scripts before applying changes. Downgrade migrations if a mistake is detected.
+* Protect Data: Always preserve existing records during migration (avoid destructive changes like dropping tables or columns with existing data).
+
+This approach ensures:
+
+* Flexibility to adapt the database structure safely.
+* Clear version history of all schema changes.
+* Minimal risk to valuable production data.
+
+### Task 3: Develop, Test, and Refine the Code
+
+#### Step 1: Initial Migration - Employee Model
 
 ```text
 └── server
@@ -187,7 +222,7 @@ $ flask shell
 >>> exit()
 ```
 
-## Second Migration - Department model
+#### Step 2: Second Migration - Department model
 
 In this next step, we will update `models.py` to add a `Department` model. We'll
 intensionally make a mistake in assigning the singular table name `department`,
@@ -331,7 +366,7 @@ $ flask shell
 >>> exit()
 ```
 
-## Third Migration - Rename department table
+#### Step 3: Third Migration - Rename department table
 
 Let's fix the error we made in naming the table. Edit `models.py` to change the
 table name from `department` to `departments`:
@@ -463,7 +498,7 @@ the 2 rows are still in the table:
 
 ![rename department table](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/rename_departments.png)
 
-## Fourth Migration - Rename address column
+#### Step 4: Fourth Migration - Rename address column
 
 We saw that Flask-Migrate generates correct migration code when we added a new
 model `Department` to the schema. Flask-Migrate also generates correct code if
@@ -563,7 +598,7 @@ flask db upgrade head
 
 ![rename column](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/rename_address.png)
 
-## Downgrading/Reverting a migration
+#### Step 5: Downgrading/Reverting a migration
 
 Sometimes we might want to undo a schema migration and return to a previous
 version.
@@ -634,28 +669,9 @@ You may need to hit the refresh button to see that change:
 Note: You should also update `models.py` to rename the variable back to the
 original `address` (and revert `__repr__`).
 
-## Conclusion
+#### Step 6: Verify your Code
 
-You should now have a basic idea of how to make a variety of changes to database
-schemas using Flask-SQLAlchemy, Flask-Migrate and Alembic. If you'd like to know
-more about what alembic can autogenerate and what it cannot, check out their
-documentation
-[here](https://alembic.sqlalchemy.org/en/latest/autogenerate.html#what-does-autogenerate-detect-and-what-does-it-not-detect)
-
----
-
-## Resources
-
-- [SQLAlchemy ORM Documentation](https://docs.sqlalchemy.org/en/14/orm/)
-- [SQLAlchemy ORM Column Elements and Expressions](https://docs.sqlalchemy.org/en/14/core/sqlelement.html)
-- [Tutorial - Alembic](https://alembic.sqlalchemy.org/en/latest/tutorial.html)
-- [Operation Reference - Alembic][op]
-
-[op]: https://alembic.sqlalchemy.org/en/latest/ops.html
-
-## Solution Code
-
-The final version of `models.py`:
+The final version of `models.py` should look like:
 
 ```py
 from flask_sqlalchemy import SQLAlchemy
@@ -690,3 +706,38 @@ class Department(db.Model):
     def __repr__(self):
         return f'<Department {self.id}, {self.name}, {self.address}>'
 ```
+
+### Step 7: Commit, Push, and (if using branching) Merge
+
+* Commit and Push your final code to GitHub
+
+```bash
+git add .
+git commit -m ""
+git push origin <main or feature branch name>
+```
+
+* Open a PR and Merge if using a feature branch
+
+### Task 4:
+
+Best Practice documentation steps:
+* Add comments to the code to explain purpose and logic, clarifying intent and functionality of your code to other developers.
+* Update README text to reflect the functionality of the application following https://makeareadme.com. 
+  * Add screenshot of completed work included in Markdown in README.
+* Delete any stale branches on GitHub
+* Remove unnecessary/commented out code
+* If needed, update git ignore to remove sensitive data
+
+## Considerations
+
+When managing database migrations, keep the following in mind:
+
+* Data Integrity Risks: Dropping or recreating tables/columns without backups can cause irreversible data loss.
+* Manual Edits Are Necessary: Flask-Migrate can't automatically detect every change (especially renaming tables/columns); developers must edit migration scripts manually.
+* Downgrades Require Care: Downgrading a migration only reverts the schema. It doesn’t automatically restore any data that may have been deleted by an earlier mistake.
+* Migration Review is Mandatory: Always open and review the autogenerated migration scripts before running flask db upgrade head.
+* Best Practices: When possible, use non-destructive operations like rename_table or alter_column instead of dropping and recreating.
+* Consistent Naming Conventions: Be thoughtful when naming models and tables initially — frequent renaming causes migration complexity.
+
+Learning to read, edit, and manage migration scripts manually is a hallmark of a professional backend developer.
