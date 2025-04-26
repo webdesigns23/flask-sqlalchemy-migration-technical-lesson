@@ -111,8 +111,6 @@ This approach ensures:
 └── server
     ├── app.py
     ├── models.py
-    └── testing
-        └── codegrade_test.py
 ```
 
 The `server` directory contains `models.py`, which defines an `Employee` model:
@@ -172,8 +170,6 @@ be different):
 │   └── versions
 │       └── 15537423c56d_initial_migration.py
 ├── models.py
-└── testing
-    └── codegrade_test.py
 ```
 
 As a reminder, the `###_initial_migration.py` script contains two functions
@@ -205,9 +201,7 @@ $ flask db upgrade head
 ```
 
 Open the database file `server/instance/app.db` using SQLite Viewer (or any
-other SQLite extension) and confirm the newly created `employees` table:
-
-![initial migration creates empty employee table](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/initial.png)
+other SQLite extension) and confirm the newly created `employees` table.
 
 Let's use the Flask shell to add a few employees:
 
@@ -225,7 +219,7 @@ $ flask shell
 #### Step 2: Second Migration - Department model
 
 In this next step, we will update `models.py` to add a `Department` model. We'll
-intensionally make a mistake in assigning the singular table name `department`,
+intentionally make a mistake in assigning the singular table name `department`,
 then see how to fix this in a subsequent migration.
 
 Update `models.py` to add the `Department` class as shown:
@@ -298,8 +292,6 @@ again, your version numbers will be different):
 │       ├── 15537423c56d_initial_migration.py
 │       └── 51f20aa4768b_add_department.py
 ├── models.py
-└── testing
-    └── codegrade_test.py
 ```
 
 Take a look at the `###_add_department.py` migration script. The `upgrade()` and
@@ -349,9 +341,7 @@ migration version. Type the following command to execute the
 $ flask db upgrade head
 ```
 
-Confirm the new `department` table has been added to the database:
-
-![department table added to database](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/add_department.png)
+Confirm the new `department` table has been added to the database.
 
 Now add some departments using Flask shell:
 
@@ -410,8 +400,6 @@ This results in a new script in `migrations/versions`:
 │       ├── 1694ecedb24d_rename_department.py
 │       └── 51f20aa4768b_add_department.py
 ├── models.py
-└── testing
-    └── codegrade_test.py
 ```
 
 **DON'T run `flask db upgrade head` yet!**
@@ -494,9 +482,7 @@ flask db upgrade head
 ```
 
 Confirm the table has been renamed from `department` to `departments` and that
-the 2 rows are still in the table:
-
-![rename department table](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/rename_departments.png)
+the 2 rows are still in the table.
 
 #### Step 4: Fourth Migration - Rename address column
 
@@ -544,8 +530,6 @@ flask db migrate -m "rename address"
 │       ├── 51f20aa4768b_add_department.py
 │       └── 76f31678b786_rename_address.py
 ├── models.py
-└── testing
-    └── codegrade_test.py
 ```
 
 Open the new `###_rename_address.py` file to see the auto-generated `upgrade()`
@@ -595,8 +579,6 @@ Now we can upgrade the schema to rename the column from `address` to `location`:
 ```console
 flask db upgrade head
 ```
-
-![rename column](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/rename_address.png)
 
 #### Step 5: Downgrading/Reverting a migration
 
@@ -661,10 +643,6 @@ flask db downgrade ###
 ```
 
 This should rename the `location` column back to `address`.
-
-You may need to hit the refresh button to see that change:
-
-![rename department table](https://curriculum-content.s3.amazonaws.com/7159/python-p4-v2-flask-sqlalchemy/rename_departments.png)
 
 Note: You should also update `models.py` to rename the variable back to the
 original `address` (and revert `__repr__`).
