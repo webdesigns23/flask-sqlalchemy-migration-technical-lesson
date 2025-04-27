@@ -691,7 +691,7 @@ class Department(db.Model):
 
 ```bash
 git add .
-git commit -m ""
+git commit -m "final solution"
 git push origin <main or feature branch name>
 ```
 
